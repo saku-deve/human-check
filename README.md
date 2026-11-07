@@ -28,18 +28,8 @@ GitHubからZIPを直接アップロードする場合は、ZIPを解凍し、**
 
 ```text
 .
-├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md
-│   │   └── feature_request.md
-│   └── PULL_REQUEST_TEMPLATE.md
-├── .gitignore
-├── .nojekyll
-├── CODE_OF_CONDUCT.md
-├── CONTRIBUTING.md
 ├── LICENSE
 ├── README.md
-├── SECURITY.md
 └── index.html
 ```
 
@@ -53,12 +43,6 @@ GitHubからZIPを直接アップロードする場合は、ZIPを解凍し、**
 ## プライバシー
 
 入力内容やチェック状態を外部サーバーへ送信する処理、CookieやLocal Storageへの保存処理はありません。ただし、公開先のホスティングサービスは通常のアクセスログ等を取得する場合があります。ホスティングサービス側のプライバシーポリシーも確認してください。
-
-## セキュリティについて
-
-このサイトは認証やアクセス制御を提供しません。ログイン保護、年齢確認、ボット対策、本人確認などの用途には使用しないでください。実際のreCAPTCHA検証が必要な場合は、秘密鍵を安全に保持できるサーバー側の処理が必要です。秘密鍵をHTMLやJavaScriptに書かないでください。
-
-脆弱性の報告方法は [SECURITY.md](SECURITY.md) を確認してください。
 
 ## ライセンス
 
