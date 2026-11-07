@@ -46,12 +46,15 @@ cd am-i-human
 ### 2. ファイル構成
 ```text
 .
-├── index.html       # メインのHTMLファイル (UI / ロジック一式)
-├── manifest.json    # PWA設定マニフェスト
-├── sw.js            # サービスワーカー (オフラインキャッシュ)
-├── ogp.png          # SNSシェア用画像
-├── README.md        # 本ファイル
-└── LICENSE          # MITライセンス
+私は人間？/
+├── Images/
+│   ├── favicon.png       # アプリ・ファビコンアイコン
+│   └── ogp.png           # OGP画像（SNSシェア用）
+├── index.html            # メインアプリケーションファイル
+├── manifest.json         # PWAマニフェストファイル
+├── sw.js                 # サービスワーカー（オフライン・キャッシュ対応）
+├── LICENSE               # ライセンスファイル (MIT)
+└── README.md             # プロジェクト説明ドキュメント
 ```
 
 ### 3. ローカルでの実行
