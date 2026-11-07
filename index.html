@@ -20,13 +20,13 @@
     <meta property="og:title" content="私は人間？ | 自分が人間か確認するサイト">
     <meta property="og:description" content="あなたのカーソルの手ぶれ、速度の変化、反射時間をリアルタイム解析します。">
     <meta property="og:url" content="https://human-check.sakudayo.com/">
-    <meta property="og:image" content="https://human-check.sakudayo.com/Images/ogp.png">
+    <meta property="og:image" id="ogImage" content="https://human-check.sakudayo.com/Images/ogp.png">
 
     <!-- Twitter / X Card Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="私は人間？ | 自分が人間か確認するサイト">
     <meta name="twitter:description" content="あなたのカーソルの手ぶれ、速度の変化、反射時間をリアルタイム解析します。">
-    <meta name="twitter:image" content="https://human-check.sakudayo.com/Images/ogp.png">
+    <meta name="twitter:image" id="twitterImage" content="https://human-check.sakudayo.com/Images/ogp.png">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -169,8 +169,12 @@
 
                 <!-- Step 1: Tile Select Quiz -->
                 <div id="stepGrid" class="block">
-                    <div class="grid grid-cols-3 gap-2.5 mb-4" id="gridTiles">
+                    <div class="grid grid-cols-3 gap-2.5 mb-3" id="gridTiles">
                         <!-- Tiles injected by JS -->
+                    </div>
+                    <!-- Error Message Container (Red text inside modal) -->
+                    <div id="quizErrorMsg" class="text-xs font-bold text-rose-500 text-center mb-3 hidden">
+                        <i class="fa-solid fa-circle-exclamation mr-1"></i> 少なくとも1つの項目を選択してください。
                     </div>
                     <div class="text-xs text-slate-500 dark:text-slate-400 text-center mb-4 italic">
                         ※正解はありません。直感で選ぶことで選択速度の揺らぎを測定します。
@@ -264,10 +268,6 @@
                         <button onclick="shareNative()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600 font-bold rounded-xl text-sm transition-all shadow-md flex items-center gap-1.5 active:scale-95">
                             <i class="fa-solid fa-share-nodes"></i>
                             <span>SNS・アプリでシェア</span>
-                        </button>
-                        <button onclick="closeResultModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-sm transition-all flex items-center gap-1.5 active:scale-95">
-                            <i class="fa-solid fa-xmark"></i>
-                            <span>閉じる</span>
                         </button>
                     </div>
                 </div>
@@ -438,6 +438,7 @@
         }
 
         function openQuizModal() {
+            document.getElementById('quizErrorMsg').classList.add('hidden');
             renderQuizTiles();
             document.getElementById('stepGrid').classList.remove('hidden');
             document.getElementById('stepHeart').classList.add('hidden');
@@ -467,6 +468,8 @@
                     <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 leading-tight">${tile.text}</span>
                 `;
                 tileEl.onclick = () => {
+                    document.getElementById('quizErrorMsg').classList.add('hidden');
+
                     if (selectedTiles.has(idx)) {
                         selectedTiles.delete(idx);
                         tileEl.classList.remove('border-emerald-500', 'bg-emerald-100/70', 'dark:bg-emerald-900/50');
@@ -482,15 +485,21 @@
         }
 
         function refreshQuizTiles() {
+            document.getElementById('quizErrorMsg').classList.add('hidden');
             currentQuizIndex = (currentQuizIndex + 1) % quizData.length;
             renderQuizTiles();
         }
 
         function verifyQuiz() {
+            if (selectedTiles.size === 0) {
+                document.getElementById('quizErrorMsg').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('quizErrorMsg').classList.add('hidden');
             document.getElementById('stepGrid').classList.add('hidden');
             document.getElementById('stepHeart').classList.remove('hidden');
             
-            // ステップ2へ切り替わった際にヘッダーのタイトルとサブタイトルを適切に更新
             document.getElementById('quizHeaderTitle').textContent = "心拍の生体リズムを測定します";
             document.getElementById('quizHeaderSub').textContent = "生体応答テスト (2/2)";
         }
@@ -571,6 +580,16 @@
             };
         }
 
+        // 動的にOGP画像を切り替える関数
+        function updateOgpImage(isHuman) {
+            const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+            const imageName = isHuman ? 'Images/ogp-human.png' : 'Images/ogp-no-human.png';
+            const fullImageUrl = baseUrl + imageName;
+
+            document.getElementById('ogImage').setAttribute('content', fullImageUrl);
+            document.getElementById('twitterImage').setAttribute('content', fullImageUrl);
+        }
+
         function completeVerification() {
             closeQuizModal();
             isVerified = true;
@@ -587,6 +606,8 @@
             const botResult = document.getElementById('botResult');
 
             if (analysis.passed) {
+                updateOgpImage(true);
+
                 checkmark.classList.remove('hidden');
                 botmark.classList.add('hidden');
                 btn.classList.add('bg-emerald-50', 'dark:bg-emerald-950', 'border-emerald-500');
@@ -609,6 +630,8 @@
                     colors: ['#22c55e', '#f43f5e', '#3b82f6', '#eab308']
                 });
             } else {
+                updateOgpImage(false);
+
                 checkmark.classList.add('hidden');
                 botmark.classList.remove('hidden');
                 btn.classList.add('bg-rose-50', 'dark:bg-rose-950', 'border-rose-500');
@@ -652,7 +675,7 @@
         function getShareText() {
             const certId = document.getElementById('certId').textContent;
             const score = document.getElementById('scorePercent').textContent;
-            return `【人間証明書獲得】人間らしさスコア ${score} で100%人間認定されました！ (ID: ${certId})\n私は人間？ - 動作軌跡で人間か確かめるサイト`;
+            return `【人間証明書獲得】人間らしさスコア ${score} で100%人間認定されました！ (ID: ${certId})\n私は人間？ - 動作軌跡で人間か確かめるサイト\n#私は人間？ #sakudayo.com`;
         }
 
         function shareToX() {
@@ -707,6 +730,10 @@
 
             document.getElementById('scoreBar').style.width = '0%';
             document.getElementById('botScoreBar').style.width = '0%';
+
+            const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+            document.getElementById('ogImage').setAttribute('content', baseUrl + 'Images/ogp.png');
+            document.getElementById('twitterImage').setAttribute('content', baseUrl + 'Images/ogp.png');
 
             generateCertId();
         }
