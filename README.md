@@ -1,49 +1,71 @@
-# 人間チェック
+# 私は人間？ (Am I Human?) 🤖🖐️
 
-「自分は人間かな？」と思ったときに、気軽にチェックできる小さな静的ウェブサイトです。
+![Am I Human? Banner](https://human-check.sakudayo.com/ogp.png)
 
-**これはジョーク・自己申告用のサイトです。本人確認やボット検出などのセキュリティ機能はありません。**
+> **「私って人間かな？」**
+> カーソルの手ぶれ、操作速度の揺らぎ、反射時間をリアルタイム解析し、自分がAIやBotではなく「人間であること」を証明・確認するWebアプリケーションです。
 
-## デモ・公開方法
+---
 
-このリポジトリはHTML/CSS/JavaScriptだけで動作します。Node.js、ビルドツール、環境変数、APIキーは必要ありません。
+## ✨ 特徴 (Features)
 
-### GitHub Pagesで公開
+- **リアルタイム行動バイオメトリクス解析**: マウスカーソルやタッチの微小な「手ぶれ」「加速度」「反応速度」を即座にスコア化。
+- **インタラクティブな人間性確認ステップ**:
+  - **Step 1:** 直感でタイルを選ぶ心理選択テスト
+  - **Step 2:** 心拍のリズムを感じるハートタップ測定
+- **人間証明書の交付**: 判定完了後、ユニークIDとスコアが記載されたグラフィカルな証明書を発行。
+- **SNSシェア機能**: 結果をワンタップでX（旧Twitter）や各種SNS・アプリへスマートに共有。
+- **モダンなUI/UX**: Tailwind CSS による洗練されたデザイン（ダークモード標準対応 / PWA対応）。
 
-1. このリポジトリのファイルをGitHubにアップロードします。
-2. GitHubリポジトリの **Settings → Pages** を開きます。
-3. **Build and deployment** の **Source** を `Deploy from a branch` にします。
-4. Branchを `main`、フォルダーを `/ (root)` にして保存します。
-5. 公開URLが表示されるまで待ちます。
+---
 
-### Netlifyで公開
+## 🚀 デモ (Demo)
 
-1. Netlifyで **Add new site → Import an existing project** を選び、GitHubリポジトリを接続します。
-2. Build commandは空欄、Publish directoryは `.`（ドット）にします。
-3. Deployします。
+実際にこちらからお試しいただけます：
+👉 [https://human-check.sakudayo.com/](https://human-check.sakudayo.com/)
 
-GitHubからZIPを直接アップロードする場合は、ZIPを解凍し、**このフォルダーの中身**をリポジトリのルートにアップロードしてください。ZIPファイルそのものをリポジトリに置く必要はありません。
+---
 
-## ファイル構成
+## 🛠️ 技術スタック (Tech Stack)
 
-```text
-.
-├── LICENSE
-├── README.md
-└── index.html
+- **Frontend**: HTML5, JavaScript (ES6+), Tailwind CSS
+- **Icons & Fonts**: FontAwesome 6, Google Fonts (M PLUS Rounded 1c)
+- **Effects**: Canvas Confetti
+- **PWA**: Web App Manifest, Service Worker (Offline Ready)
+
+---
+
+## 💻 使い方・開発手順 (Getting Started)
+
+### 1. リポジトリのクローン
+```bash
+git clone https://github.com/YOUR_USERNAME/am-i-human.git
+cd am-i-human
 ```
 
-## 技術構成
+### 2. ファイル構成
+```text
+.
+├── index.html       # メインのHTMLファイル (UI / ロジック一式)
+├── manifest.json    # PWA設定マニフェスト
+├── sw.js            # サービスワーカー (オフラインキャッシュ)
+├── ogp.png          # SNSシェア用画像
+├── README.md        # 本ファイル
+└── LICENSE          # MITライセンス
+```
 
-- HTML5
-- CSS
-- Vanilla JavaScript
-- 外部ライブラリ・外部APIなし
+### 3. ローカルでの実行
+特殊なビルドツール（Node.js等）は不要です。
+VS Codeの「Live Server」拡張機能などを使用するか、そのままブラウザで `index.html` を開いて動作確認を行ってください。
 
-## プライバシー
+---
 
-入力内容やチェック状態を外部サーバーへ送信する処理、CookieやLocal Storageへの保存処理はありません。ただし、公開先のホスティングサービスは通常のアクセスログ等を取得する場合があります。ホスティングサービス側のプライバシーポリシーも確認してください。
+## 📄 ライセンス (License)
 
-## ライセンス
+このプロジェクトは [MIT License](./LICENSE) のもとで公開されています。商用・非商用問わず、ご自由にご利用・改変いただけます。
 
-MIT License。詳細は [LICENSE](LICENSE) を確認してください。
+---
+
+## 👤 クレジット (Credits)
+
+- **Powered by**: [Saku](https://link.sakudayo.com)
