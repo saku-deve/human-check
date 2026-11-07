@@ -1,7 +1,5 @@
 # 私は人間？ (Am I Human?) 🤖🖐️
 
-![Am I Human? Banner](https://human-check.sakudayo.com/ogp.png)
-
 > **「私って人間かな？」**
 > カーソルの手ぶれ、操作速度の揺らぎ、反射時間をリアルタイム解析し、自分がAIやBotではなく「人間であること」を証明・確認するWebアプリケーションです。
 
