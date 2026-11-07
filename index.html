@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f8ff">
+  <meta name="description" content="自分が人間だと思えるかを、気軽にチェックする小さな自己申告サイトです。">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="人間チェック">
+  <meta property="og:description" content="あなたは人間ですか？ 気軽に自己申告してみましょう。">
+  <title>人間チェック</title>
+  <style>
+    :root { color-scheme: light; --ink:#202b43; --muted:#69758d; --blue:#4778e8; --line:#e4eaf5; }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100vh; display:grid; place-items:center; padding:24px;
+      font-family:system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink);
+      background:radial-gradient(ellipse at top,#e7f0ff 0%,#f7f9ff 48%,#fff 100%);
+    }
+    main {
+      width:min(100%,520px); padding:clamp(28px,6vw,48px); background:#fff;
+      border:1px solid var(--line); border-radius:24px;
+      box-shadow:0 18px 60px rgba(43,76,135,.10); text-align:center;
+    }
+    .eyebrow { color:var(--blue); font-size:.78rem; font-weight:750; letter-spacing:.12em; }
+    h1 { margin:12px 0 10px; font-size:clamp(2rem,7vw,2.65rem); letter-spacing:.02em; }
+    .lead { margin:0 auto 28px; color:var(--muted); line-height:1.8; }
+    .check {
+      display:flex; align-items:center; gap:14px; padding:18px; text-align:left;
+      border:1px solid var(--line); border-radius:16px; background:#fbfcff;
+      cursor:pointer; font-weight:650; line-height:1.5;
+    }
+    .check input { width:22px; height:22px; flex:0 0 auto; accent-color:var(--blue); }
+    .result { display:none; margin-top:18px; padding:16px; border-radius:14px; background:#eef5ff; color:#244b96; line-height:1.75; }
+    .result.visible { display:block; }
+    .notice { margin:24px 0 0; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:.82rem; line-height:1.8; text-align:left; }
+    footer { margin-top:24px; color:var(--muted); font-size:.82rem; }
+    a { color:var(--blue); font-weight:700; text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    :focus-visible { outline:3px solid #91b2ff; outline-offset:3px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">A TINY SELF-CHECK</div>
+    <h1>あなたは人間ですか？</h1>
+    <p class="lead">深く考えず、今の気持ちでチェックしてみてください。</p>
+
+    <label class="check">
+      <input id="human-check" type="checkbox">
+      <span>私は人間だと思います</span>
+    </label>
+
+    <div id="result" class="result" role="status" aria-live="polite">
+      チェック済み（自己申告）です。<br>
+      これは遊びのためのチェックで、本人確認や認証は行っていません。
+    </div>
+
+    <p class="notice">
+      <strong>ご注意：</strong>このページは完全な静的サイトです。Google reCAPTCHAによる検証、本人確認、人間であることの判定は行いません。チェック結果はこのブラウザ内だけで表示され、サーバーには送信されません。
+    </p>
+    <footer>Powered by <a href="https://link.sakudayo.com" target="_blank" rel="noopener noreferrer">Saku</a></footer>
+  </main>
+  <script>
+    const checkbox = document.getElementById("human-check");
+    const result = document.getElementById("result");
+    checkbox.addEventListener("change", () => {
+      result.classList.toggle("visible", checkbox.checked);
+    });
+  </script>
+</body>
+</html>
