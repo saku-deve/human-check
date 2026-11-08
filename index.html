@@ -15,14 +15,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <!-- OGP (X / SNS Sharing Meta Tags) -->
+    <!-- OGP (X / SNS Sharing Meta Tags) - 動的切替対応 -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="私は人間？ | 自分が人間か確認するサイト">
     <meta property="og:description" content="あなたのカーソルの手ぶれ、速度の変化、反射時間をリアルタイム解析します。">
     <meta property="og:url" content="https://human-check.sakudayo.com/">
     <meta property="og:image" id="ogImage" content="https://human-check.sakudayo.com/Images/ogp.png">
 
-    <!-- Twitter / X Card Tags -->
+    <!-- Twitter / X Card Tags - 動的切替対応 -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="私は人間？ | 自分が人間か確認するサイト">
     <meta name="twitter:description" content="あなたのカーソルの手ぶれ、速度の変化、反射時間をリアルタイム解析します。">
@@ -345,8 +345,30 @@
 
         let mouseTrack = [];
         let hoverStartTime = 0;
+        let touchStartTime = 0;
         let clickReactionTime = 0;
         let sessionStartTime = Date.now();
+
+        // ページ読み込み時にクエリパラメータをチェックしてOGP画像を即座に設定
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const type = urlParams.get('type');
+            const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+            
+            let targetImage = 'Images/ogp.png';
+            if (type === 'human') {
+                targetImage = 'Images/ogp-human.png';
+            } else if (type === 'bot') {
+                targetImage = 'Images/ogp-no-human.png';
+            }
+
+            const fullImageUrl = baseUrl + targetImage;
+            document.getElementById('ogImage').setAttribute('content', fullImageUrl);
+            document.getElementById('twitterImage').setAttribute('content', fullImageUrl);
+
+            document.getElementById('verifiedDate').textContent = new Date().toLocaleDateString();
+            generateCertId();
+        });
 
         function recordPoint(x, y) {
             const now = Date.now();
@@ -355,11 +377,20 @@
         }
 
         window.addEventListener('mousemove', (e) => recordPoint(e.clientX, e.clientY));
+        
+        // タッチ操作時のイベント制御と軌跡記録
+        window.addEventListener('touchstart', (e) => {
+            touchStartTime = Date.now();
+            if (e.touches.length > 0) {
+                recordPoint(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
         window.addEventListener('touchmove', (e) => {
             if (e.touches.length > 0) {
                 recordPoint(e.touches[0].clientX, e.touches[0].clientY);
             }
-        });
+        }, { passive: true });
 
         function onHoverCaptcha() {
             hoverStartTime = Date.now();
@@ -402,11 +433,6 @@
             }
         ];
 
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('verifiedDate').textContent = new Date().toLocaleDateString();
-            generateCertId();
-        });
-
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
         }
@@ -419,10 +445,14 @@
         function onCheckboxClick() {
             if (isVerified) return;
 
+            const now = Date.now();
             if (hoverStartTime > 0) {
-                clickReactionTime = Date.now() - hoverStartTime;
+                clickReactionTime = now - hoverStartTime;
+            } else if (touchStartTime > 0) {
+                clickReactionTime = now - touchStartTime;
             } else {
-                clickReactionTime = 250; 
+                // タッチデバイスでホバーが取れない場合は自然な揺らぎ時間(280~430ms)を付与
+                clickReactionTime = Math.floor(280 + Math.random() * 150);
             }
 
             const spinner = document.getElementById('spinner');
@@ -516,6 +546,8 @@
             let jitterScore = 0;
             let reasonText = "";
 
+            const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
             if (mouseTrack.length >= 8) {
                 let totalAngleChange = 0;
                 let totalVelocityChange = 0;
@@ -542,29 +574,30 @@
                 
                 if (jitterScore > 8) {
                     score += 30;
-                } else if (jitterScore < 1.5) {
+                } else if (jitterScore < 1.5 && !isTouchDevice) {
                     score -= 35;
                     reasonText = "直線的すぎる操作軌跡";
+                } else {
+                    score += 15;
                 }
             } else {
-                const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-                if (!isTouchDevice) {
+                if (isTouchDevice) {
+                    score += 25;
+                } else {
                     score -= 40;
                     reasonText = "カーソル移動データ欠落 (自動化疑い)";
-                } else {
-                    score += 20;
                 }
             }
 
             if (clickReactionTime > 80 && clickReactionTime < 1500) {
-                score += 20;
-            } else if (clickReactionTime <= 30) {
+                score += 25;
+            } else if (clickReactionTime <= 30 && !isTouchDevice) {
                 score -= 30;
                 reasonText = "機械的な即時反応 (0ms)";
             }
 
-            if (totalTime < 1000) {
-                score -= 30;
+            if (totalTime < 800) {
+                score -= 20;
                 reasonText = "操作時間が短すぎます";
             }
 
@@ -574,20 +607,10 @@
             return {
                 score: finalScore.toFixed(1),
                 passed: passed,
-                jitterText: jitterScore > 8 ? "正常 (High)" : (jitterScore > 3 ? "標準 (Normal)" : "低 (Low/Straight)"),
+                jitterText: isTouchDevice ? "タッチ操作 (Touch)" : (jitterScore > 8 ? "正常 (High)" : "標準 (Normal)"),
                 reactionMs: `${clickReactionTime} ms`,
                 reason: reasonText || "機械的な動作パターン"
             };
-        }
-
-        // 動的にOGP画像を切り替える関数
-        function updateOgpImage(isHuman) {
-            const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-            const imageName = isHuman ? 'Images/ogp-human.png' : 'Images/ogp-no-human.png';
-            const fullImageUrl = baseUrl + imageName;
-
-            document.getElementById('ogImage').setAttribute('content', fullImageUrl);
-            document.getElementById('twitterImage').setAttribute('content', fullImageUrl);
         }
 
         function completeVerification() {
@@ -605,8 +628,12 @@
             const humanResult = document.getElementById('humanResult');
             const botResult = document.getElementById('botResult');
 
+            const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+
             if (analysis.passed) {
-                updateOgpImage(true);
+                const humanImg = baseUrl + 'Images/ogp-human.png';
+                document.getElementById('ogImage').setAttribute('content', humanImg);
+                document.getElementById('twitterImage').setAttribute('content', humanImg);
 
                 checkmark.classList.remove('hidden');
                 botmark.classList.add('hidden');
@@ -630,7 +657,9 @@
                     colors: ['#22c55e', '#f43f5e', '#3b82f6', '#eab308']
                 });
             } else {
-                updateOgpImage(false);
+                const botImg = baseUrl + 'Images/ogp-no-human.png';
+                document.getElementById('ogImage').setAttribute('content', botImg);
+                document.getElementById('twitterImage').setAttribute('content', botImg);
 
                 checkmark.classList.add('hidden');
                 botmark.classList.remove('hidden');
@@ -675,20 +704,21 @@
         function getShareText() {
             const certId = document.getElementById('certId').textContent;
             const score = document.getElementById('scorePercent').textContent;
-            return `【人間証明書獲得】人間らしさスコア ${score} で100%人間認定されました！ (ID: ${certId})\n私は人間？ - 動作軌跡で人間か確かめるサイト\n#私は人間 #SakuDayo`;
+            return `【人間証明書獲得】人間らしさスコア ${score} で100%人間認定されました！ (ID: ${certId})\n私は人間？ - 動作軌跡で人間か確かめるサイト\n\n#私は人間 #SakuDayo`;
         }
 
         function shareToX() {
             const text = encodeURIComponent(getShareText());
-            const url = encodeURIComponent(window.location.href);
-            window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+            const shareUrl = encodeURIComponent(window.location.origin + window.location.pathname + '?type=human');
+            window.open(`https://x.com/intent/tweet?text=${text}&url=${shareUrl}`, '_blank');
         }
 
         function shareNative() {
+            const shareUrl = window.location.origin + window.location.pathname + '?type=human';
             const shareData = {
                 title: '私は人間？ - 人間証明書',
                 text: getShareText(),
-                url: window.location.href
+                url: shareUrl
             };
 
             if (navigator.share) {
@@ -696,13 +726,13 @@
                     console.log('シェアがキャンセルまたは失敗しました', err);
                 });
             } else if (navigator.clipboard) {
-                navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`).then(() => {
+                navigator.clipboard.writeText(`${shareData.text}\n${shareUrl}`).then(() => {
                     alert('結果テキストをクリップボードにコピーしました！');
                 }).catch(() => {
-                    copyFallback(`${shareData.text}\n${shareData.url}`);
+                    copyFallback(`${shareData.text}\n${shareUrl}`);
                 });
             } else {
-                copyFallback(`${shareData.text}\n${shareData.url}`);
+                copyFallback(`${shareData.text}\n${shareUrl}`);
             }
         }
 
@@ -721,6 +751,7 @@
             mouseTrack = [];
             sessionStartTime = Date.now();
             hoverStartTime = 0;
+            touchStartTime = 0;
 
             document.getElementById('checkmark').classList.add('hidden');
             document.getElementById('botmark').classList.add('hidden');
@@ -731,6 +762,7 @@
             document.getElementById('scoreBar').style.width = '0%';
             document.getElementById('botScoreBar').style.width = '0%';
 
+            window.history.replaceState({}, document.title, window.location.pathname);
             const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
             document.getElementById('ogImage').setAttribute('content', baseUrl + 'Images/ogp.png');
             document.getElementById('twitterImage').setAttribute('content', baseUrl + 'Images/ogp.png');
